@@ -1,0 +1,57 @@
+import sys
+from awsglue.transforms import *
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+
+## @params: [TempDir, JOB_NAME]
+args = getResolvedOptions(sys.argv, ['TempDir','JOB_NAME'])
+
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args['JOB_NAME'], args)
+
+
+# Script generated for node S3 bucket
+datasource0 = glueContext.create_dynamic_frame.from_options(
+    connection_type="s3",
+    format="parquet",
+    connection_options={
+        "paths": ["s3://coreprofile-entities/tire-profile/tire-profile-filtered-hk-rk-select-fields/"],
+        "recurse": True,
+    },
+    transformation_ctx="datasource0",
+)
+
+
+## @type: ApplyMapping
+datasource0.toDF().show()
+## @return: applymapping1
+## @inputs: [frame = datasource0]
+resolvechoice2 = ResolveChoice.apply(frame = datasource0, choice = "make_cols", transformation_ctx = "resolvechoice2")
+
+## @type: DropNullFields
+## @args: [transformation_ctx = "dropnullfields3"]
+## @return: dropnullfields3
+## @inputs: [frame = resolvechoice2]
+dropnullfields3 = DropNullFields.apply(frame = resolvechoice2, transformation_ctx = "dropnullfields3")
+
+## @type: DataSink
+## @args: [catalog_connection = "datalab_rs", connection_options = {"dbtable": "stage_assets", "database": "dev"}, redshift_tmp_dir = TempDir, transformation_ctx = "datasink4"]
+## @return: datasink4
+## @inputs: [frame = dropnullfields3]
+datasink4 = glueContext.write_dynamic_frame.from_jdbc_conf(
+    frame = dropnullfields3, 
+    catalog_connection = "load-redshift", 
+    connection_options = {
+        "dbtable": "core-profile-entities.tire-profile", 
+        "database": "dev"
+    }, 
+    redshift_tmp_dir = args["TempDir"], 
+    transformation_ctx = "datasink4"
+
+)
+job.commit()
