@@ -1,0 +1,26 @@
+import json
+import boto3
+import time 
+
+def lambda_handler(event, context):
+    client = boto3.client('glue')
+
+    response = client.start_job_run(JobName = "core-profile-workflow-etl-sql-stored-procedure-create-schema-stage")
+
+    flag = True
+    counter = 1
+    while flag == True:
+        time.sleep(60)
+        status_detail = client.get_job_run(JobName='core-profile-workflow-etl-sql-stored-procedure-create-schema-stage', RunId = response.get("JobRunId"))
+        status = status_detail.get("JobRun").get("JobRunState")
+        if status == 'SUCCEEDED':
+            flag = False
+            return response
+        if counter > 3:
+            break
+        
+        counter += 1 
+    return {
+            'statusCode': 200,
+            'body': json.dumps('Job completed')
+        }
