@@ -1,0 +1,28 @@
+import json
+import boto3
+import time 
+
+
+def lambda_handler(event, context):
+    client = boto3.client('glue')
+    response = client.start_crawler(
+        Name = 'core-profile-workflow-etl-crawler-flattened-parquet'
+        )
+    
+    retry_count = 1
+    max_retries = 20
+    while retry_count < max_retries:
+        time.sleep(20)
+        crawler_status = client.get_crawler(
+            Name = 'core-profile-workflow-etl-crawler-flattened-parquet'
+        )
+        crawler_run_status = crawler_status['Crawler']['State']
+        if crawler_run_status == 'READY':
+            break
+        else:
+            retry_count += 1
+            
+    return {
+            'statusCode': 200,
+            'body': json.dumps('crawler finished')
+        }
