@@ -1,0 +1,22 @@
+import sys
+
+import json
+from boto3 import client
+
+conn = client('s3')
+
+bucket = 'coreprofile-entities'
+folders = ['location', 'tire-profile', 's3-extracts']
+
+
+for folder in folders:
+    print('Deleting files from the folder :', folder)
+    file_objects = conn.list_objects(Bucket = bucket, Prefix = folder)['Contents']
+    print('Number of files in the folder are : ', len(file_objects))
+    if len(file_objects)>0:
+        for item in file_objects:
+            try:
+                conn.delete_object(Bucket=bucket, Key=item['Key'])
+                print('Deleted object: ', item['Key'])
+            except:
+                print('File not deleted :', item['Key'])
