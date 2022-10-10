@@ -1,0 +1,35 @@
+## Note : you need to create an IAM role that has permissions to read and write between the two AWS accounts 
+
+import sys
+import json
+from boto3 import client
+
+conn = client('s3')
+
+source_bucket = 'core-profile-exports'
+destination_bucket = 'coreprofile-entities'
+source_objects = conn.list_objects(Bucket = source_bucket)['Contents']
+
+# find the files that were added last
+last_modifieds = []
+for item in source_objects:
+    last_modifieds.append(item['LastModified'])
+
+latest_date = max(last_modifieds)
+
+# Check files in the destination folder
+destination_folder = conn.list_objects(Bucket = destination_bucket, Prefix='s3-extract')['Contents']
+# extract file names from the folder
+files_dest = [item['Key'].split('/')[-1] for item in destination_folder if 'json.gz' in item['Key']]
+
+for item in source_objects:
+     if (item['LastModified'].date() == latest_date.date()) and ('.json.gz' in item['Key']):
+        new_file_name = item['Key'].split('/')[-1]
+        source_path = source_bucket + '/' + item['Key']
+        
+        ## If condition = if the same files does not exist in the bucket
+        if new_file_name not in files_dest:
+            conn.copy_object(Bucket= destination_bucket,  CopySource=source_path , Key= 's3-extract/' + new_file_name)
+            print('File copied: ', new_file_name)
+        else:
+            print('File already exists :', new_file_name)
