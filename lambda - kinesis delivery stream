@@ -1,0 +1,74 @@
+import base64
+import json
+from boto3.dynamodb.types import TypeDeserializer
+from decimal import Decimal
+
+class DecimalEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, Decimal):
+      return str(obj)
+    return json.JSONEncoder.default(self, obj)
+   
+def ddb_deserialize(r, type_deserializer = TypeDeserializer()):
+    return type_deserializer.deserialize({"M": r})
+
+def lambda_handler(event, context):
+    
+    
+    output = []
+
+    for record in event['records']:
+        print(record['recordId'])
+        payload = json.loads(base64.b64decode(record['data']).decode('utf-8'))
+        print(payload["eventName"])
+        if (payload["eventName"]=='REMOVE'):
+            converted = ddb_deserialize(payload["dynamodb"]["OldImage"])
+            print(converted)
+            elem = {
+                'hash_key': converted["hash_key"],
+                'range_key': converted["range_key"]
+            }
+            try:
+                output_record = {
+                    'recordId': record['recordId'],
+                    'result': 'Ok',
+                    'data': base64.b64encode(json.dumps(elem, cls=DecimalEncoder).encode('utf-8'))
+                }
+                print(output_record)
+                output.append(output_record)
+            except Exception as e:
+                print(e)
+                print('dynamoerror ' + str(converted))
+                output_record = {
+                    'recordId': record['recordId'],
+                    'result': 'Ok',
+                    'data': base64.b64encode(json.dumps(elem, cls=DecimalEncoder).encode('utf-8'))
+                }
+
+
+
+               output.append(output_record)
+        else:
+            converted = ddb_deserialize(payload["dynamodb"]["NewImage"])
+            print(converted)
+            try:
+                output_record = {
+                    'recordId': record['recordId'],
+                    'result': 'Ok',
+                    'data': base64.b64encode(json.dumps(converted, cls=DecimalEncoder).encode('utf-8'))
+                }
+                print(output_record)
+                output.append(output_record)
+            except Exception as e:
+                print(e)
+                print('dynamoerror ' + str(converted))
+                output_record = {
+                    'recordId': record['recordId'],
+                    'result': 'Ok',
+                    'data': base64.b64encode(json.dumps({}, cls=DecimalEncoder).encode('utf-8'))
+                }
+                output.append(output_record)
+
+        print('Successfully processed record {}'.format(payload))
+
+    return {'records': output}
