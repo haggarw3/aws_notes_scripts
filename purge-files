@@ -20,3 +20,4 @@ for folder in folders:
                 print('Deleted object: ', item['Key'])
             except:
                 print('File not deleted :', item['Key'])
+ 
