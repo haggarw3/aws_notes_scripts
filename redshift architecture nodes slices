@@ -1,0 +1,18 @@
+https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html#working-with-clusters-overview
+
+
+****https://towardsdatascience.com/amazon-redshift-architecture-b674513eb996****
+
+Redshift is a clustered warehouse and each cluster can house multiple databases. As expected, each database contains multiple objects like tables, views, stored procedures, etc.
+
+Nodes and Slices
+A node is a compute unit with dedicated CPUs, memory and disk. Redshift has two types of nodes: Leader and Compute. The Leader node manages data distribution and query execution across Compute nodes. Data is stored on Compute nodes only.
+Slice is logical partition for disk storage. Each node has multiple slices which allow parallel access and processing across slices on each node
+The number of slices per node depends on the node instance types. Redshift currently offers 3 families of instances: Dense Compute(dc2), Dense Storage (ds2) , and Managed Storage(ra3). The slices can range from 2 per node to 16 per node depending on the instance family and instance type; see this for details. The objective of this concept is to distribute the workload of queries evenly across all nodes to leverage the parallel compute and increase efficiency.
+
+
+**********
+- Number of files to be created when writing to S3 
+- Avoid creating too many small files;
+- If loading to Redshift, Number of files created should be equal to the number of slices in the cluster
+**********
