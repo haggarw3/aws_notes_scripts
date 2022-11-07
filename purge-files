@@ -6,8 +6,7 @@ from boto3 import client
 conn = client('s3')
 
 bucket = 'coreprofile-entities'
-folders = ['location', 'tire-profile', 's3-extracts']
-
+folders = ['location', 'tire-profile', 's3-extract']
 
 for folder in folders:
     print('Deleting files from the folder :', folder)
@@ -20,4 +19,3 @@ for folder in folders:
                 print('Deleted object: ', item['Key'])
             except:
                 print('File not deleted :', item['Key'])
- 
