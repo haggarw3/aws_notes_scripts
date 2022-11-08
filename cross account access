@@ -35,3 +35,6 @@ Note : for multiple buckets:
                 "arn:aws:s3:::core-profile-exports/*",
                 "arn:aws:s3:::core-profile-datalab-daily-extracts/*"
             ]
+## "arn:aws:s3:::core-profile-datalab-daily-extracts/*"
+This will give access to all the folders etc in that bucket 
+To provide access only to a particular folder in the bucket, use this ## "arn:aws:s3:::core-profile-datalab-daily-extracts/exports/*"
