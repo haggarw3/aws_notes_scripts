@@ -37,4 +37,41 @@ Note : for multiple buckets:
             ]
 ## "arn:aws:s3:::core-profile-datalab-daily-extracts/*"
 This will give access to all the folders etc in that bucket 
-To provide access only to a particular folder in the bucket, use this ## "arn:aws:s3:::core-profile-datalab-daily-extracts/exports/*"
+To provide access only to a particular folder in the bucket,
+use this ## "arn:aws:s3:::core-profile-datalab-daily-extracts/exports/*"
+
+
+
+
+******
+UPDATE THE BUCKET POLICY (in permissions)
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "SID",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::464340339497:root"
+            },
+            "Action": [
+                "s3:Get*",
+                "s3:Put*",
+                "s3:Delete*",
+                "s3:ListBucket",
+                "s3:ListBucketMultipartUploads",
+                "s3:ListBucketVersions",
+                "s3:ListMultipartUploadParts"
+            ],
+            "Resource": [
+                "arn:aws:s3:::core-profile-datalab-daily-extracts",
+                "arn:aws:s3:::core-profile-datalab-daily-extracts/*"
+            ]
+        }
+    ]
+}
+
+
+
+************************************************************************
